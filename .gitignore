@@ -1,52 +1,170 @@
-# Prerequisites
-*.d
+#define max 1000
+#define n 7
+#define position_x 3
+#define position_y 4
+#define start_posx 0
+#define start_posy 0
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+#include <stdio.h>
 
-# Linker output
-*.ilk
-*.map
-*.exp
+typedef struct pos{
+  int x;
+  int y;
+  int val;
 
-# Precompiled Headers
-*.gch
-*.pch
+}pos;
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+pos wall_list[]={{1,1},{3,3},{3,0},{5,1},{5,3},{5,4},{5,5},{3,6},{6,1}};
+//initializers
+pos q[max];
+int front=0;
+int rear=-1;
+int arr[n][n];
+int value=0;
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+int no_walls=sizeof(wall_list)/sizeof(wall_list[0]);
+pos p= {position_x,position_y,0};
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+//functions
+void display_arr(){
+  for(int i= 0; i<n; i++){
+    for(int j=0; j<n; j++){
+      if(arr[i][j]!=-2){
+      printf("%*d ",2,arr[i][j]);}
+      else{
+        printf("%*c ",2,'#');
+      }
+    }printf("\n\n");
+}}
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+int isfull(){
+  if(rear==max-1){
+    return 2;
+  }
+  return 1;
+}
+
+int isempty(){
+  if(front>rear){
+    front=0;
+    rear=-1;
+    return 2;
+
+  }return 1;
+}
+
+void enqueue(pos data){
+  if(isfull()==2){
+    printf("queue is full");
+  }
+  else{
+    rear++;
+    q[rear].x=data.x;
+    q[rear].y=data.y;
+    q[rear].val=data.val;
+  }
+}
+
+pos dequeue(){
+  if(isempty()==2){
+    printf("queue is empty");
+  }
+
+  else{
+    front++;
+    return  q[front-1];
+  }
+}
+
+void display(){
+  for(int i=front;i<=rear;i++){
+    printf("{%d,%d} ",q[i].x,q[i].y);
+  }
+}
+
+void floodfill(int arr[][n],pos p){
+// arr[p.x][p.y]=value;
+
+  if(p.y-1>=0 && arr[p.x][p.y-1]==-1 ){
+    pos pl={p.x,p.y-1,p.val+1};
+    arr[pl.x][pl.y]=pl.val;
+
+    enqueue(pl);}
+
+  if(p.x-1>=0 && arr[p.x-1][p.y]==-1 ){
+  pos pu={p.x-1,p.y,p.val+1};
+  arr[pu.x][pu.y]=pu.val;
+  enqueue(pu);}
+
+
+  if(p.y+1<n && arr[p.x][p.y+1]==-1){
+    pos pr={p.x,p.y+1,p.val+1};
+    arr[pr.x][pr.y]=pr.val;
+    enqueue(pr);}
+
+  if(p.x+1<n && arr[p.x+1][p.y]==-1){
+    pos pd={p.x+1 ,p.y,p.val+1};
+    arr[pd.x][pd.y]=pd.val;
+    enqueue(pd);}
+
+  //value++;
+}
+
+void perform_floodfill(){
+   while(isempty()==1){
+    p=dequeue();
+    floodfill(arr,p);
+  }
+}
+
+void move_mouse(pos mm_pos){
+  while(mm_pos.x!=position_x || mm_pos.y!=position_y){
+  printf(" %d %d ->",mm_pos.x,mm_pos.y);
+  if(arr[mm_pos.x][mm_pos.y+1]==mm_pos.val-1){
+    mm_pos.y++;
+    mm_pos.val--;
+
+}
+  else if(arr[mm_pos.x+1][mm_pos.y]==mm_pos.val-1){
+    mm_pos.x++;
+   mm_pos.val--;
+  }
+  else if(arr[mm_pos.x][mm_pos.y-1]==mm_pos.val-1){
+    mm_pos.y--;
+    mm_pos.val--;}
+  else if(arr[mm_pos.x-1][mm_pos.y]==mm_pos.val-1){
+    mm_pos.x--;
+    mm_pos.val--;}
+
+}printf("%d %d",position_x,position_y);
+}
+
+
+int main(void) {
+// assign value of -1 to each cell
+  for(int i= 0; i<n; i++){
+    for(int j=0; j<n; j++){
+      arr[i][j]=-1;
+    }}
+//creating goal in the maze and its manhatten distance as zero
+  arr[p.x][p.y]=value;
+  enqueue(p);
+//creating walls in the maze by assigning cell value as -2
+  for(int i=0; i<no_walls; i++){
+    arr[wall_list[i].x][wall_list[i].y]=-2;
+  }
+//performing floodfill for queue elements until empty
+  perform_floodfill();
+  display_arr();
+
+// micro mouse pos
+pos mm_pos={start_posx,start_posy,arr[start_posx][start_posy]};
+
+
+//moving mouse with least turns 
+move_mouse(mm_pos);
+
+
+return 0;
+}
